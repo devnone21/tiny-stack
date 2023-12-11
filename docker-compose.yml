@@ -38,7 +38,10 @@ services:
       #   source: ./config/prometheus.yml
       #   target: /etc/prometheus/prometheus.yml
       - prometheus_data:/prometheus
-    command: -config.file=/prometheus/config/prometheus.yml
+    command:
+      [
+        '--config.file=/prometheus/config/prometheus.yml'
+      ]
     networks:
       - monitoring
     depends_on:
