@@ -36,12 +36,10 @@ services:
     volumes:
       # - type: bind
       #   source: ./config/prometheus.yml
-      #   target: /etc/prometheus/prometheus.yml
+      #   target: prometheus_data/_data/config/prometheus.yml
       - prometheus_data:/prometheus
     command:
-      [
-        '--config.file=/prometheus/config/prometheus.yml'
-      ]
+      ['--config.file=/prometheus/config/prometheus.yml']
     networks:
       - monitoring
     depends_on:
