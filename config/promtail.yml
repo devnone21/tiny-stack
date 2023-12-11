@@ -1,0 +1,54 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+    tenant_id: docker
+
+scrape_configs:
+  - job_name: xtblogs
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: xtblogs
+          __path__: /var/log/xtb-app.log
+    pipeline_stages:
+      - regex:
+          expression: '^(?P<extractedtimestamp>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) - (?P<level>[[:alpha:]]+) - (?P<xtbapp>\S+) - (?P<message>.*)$'
+      - labels:
+          reformattedtimestamp: extractedtimestamp
+          level: level
+          xtbapp: xtbapp
+          message: message
+      - timestamp:
+          source: extractedtimestamp
+          format: "2023-12-11 00:59:04"
+          location: Asia/Bangkok
+  - job_name: flog_scrape 
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 15s
+        filters:
+          - name: label
+            values: ["logging=promtail"] 
+    relabel_configs:
+      - source_labels: ['__meta_docker_container_name']
+        regex: '/(.*)'
+        target_label: 'container'
+      - source_labels: ['__meta_docker_container_log_stream']
+        target_label: 'logstream'
+      - source_labels: ['__meta_docker_container_label_logging_jobname']
+        target_label: 'job'
+    pipeline_stages:
+      - cri: {}
+      - multiline:
+          firstline: ^\d{4}-\d{2}-\d{2} \d{1,2}:\d{2}:\d{2},\d{3}
+          max_wait_time: 3s
+      - json:
+          expressions:
+            level: level
