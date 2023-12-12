@@ -29,7 +29,7 @@ scrape_configs:
           source: extractedtimestamp
           format: "2023-12-11 00:59:04"
           location: Asia/Bangkok
-  - job_name: flog_scrape
+  - job_name: containers
     docker_sd_configs:
       - host: unix:///var/run/docker.sock
         refresh_interval: 15s
@@ -40,15 +40,7 @@ scrape_configs:
       - source_labels: ['__meta_docker_container_name']
         regex: '/(.*)'
         target_label: 'container'
-      - source_labels: ['__meta_docker_container_log_stream']
-        target_label: 'logstream'
-      - source_labels: ['__meta_docker_container_label_logging_jobname']
-        target_label: 'job'
     pipeline_stages:
-      - cri: {}
-      - multiline:
-          firstline: ^\d{4}-\d{2}-\d{2} \d{1,2}:\d{2}:\d{2},\d{3}
-          max_wait_time: 3s
-      - json:
-          expressions:
-            level: level
+      - docker: {}
+      - static_labels:
+          job: "promtail"
