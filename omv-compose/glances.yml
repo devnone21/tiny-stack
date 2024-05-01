@@ -1,0 +1,15 @@
+---
+services:
+  glances:
+    image: nicolargo/glances:latest-full
+    container_name: glances
+    pid: host
+    network_mode: host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /run/user/1000/podman/podman.sock:/run/user/1000/podman/podman.sock:ro
+      - CHANGE_TO_COMPOSE_DATA_PATH/glances:/glances/conf
+    environment:
+      - "GLANCES_OPT=-w -t 10"
+      - TZ=$TZ
+    restart: unless-stopped

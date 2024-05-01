@@ -1,0 +1,24 @@
+---
+# https://hub.docker.com/r/linuxserver/jellyfin
+services:
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:latest
+    container_name: jellyfin
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - JELLYFIN_PublishedServerUrl=${LANIP}
+    volumes:
+      - CHANGE_TO_COMPOSE_DATA_PATH/jellyfin/library:/config
+      - ${HDD}:/media
+    ports:
+      - 8096:8096
+      - 8920:8920 #optional
+      - 7359:7359/udp #optional
+      - 1900:1900/udp #optional
+    restart: unless-stopped
+    group_add:
+      - "105"
+    devices:
+      - /dev/dri:/dev/dri
